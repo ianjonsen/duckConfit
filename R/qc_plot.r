@@ -6,7 +6,8 @@
 ##' @param ssm.tbl a compound tibble of SSM filter output grouped by \code{id} or
 ##'   \code{id} and \code{stage}
 ##' @param sp the species' 4-letter abbreviated name
-##' @param filt_rnd the filtering round for which plots are generated (one of: 1, 1b, 2, 3)
+##' @param filt_rnd the filtering round for which plots are generated (one of: 1, 1b, 2, 2b)
+##' @param fullpath user-provided full path for .pdf file (default = NULL)
 ##' @return a .pdf file of quality control plots
 ##'
 ##' @examples
@@ -16,10 +17,12 @@
 ##' @importFrom ggplot2 aes map_data ggplot geom_map theme ylim xlim geom_path geom_point ggtitle geom_line geom_rug
 ##' @importFrom dplyr mutate do
 ##' @importFrom gridExtra grid.arrange
+##' @export
 
 qc_plot <- function(ssm.tbl,
                     sp,
-                    filt_rnd = 1) {
+                    filt_rnd = 1,
+                    fullpath = NULL) {
   ##
 
   map.world <- map_data(map = "world")
@@ -27,7 +30,7 @@ qc_plot <- function(ssm.tbl,
 
   plt.fn <- function(d) {
 
-    ssm <- d$ssm[[1]]
+    ssm <- d$ssm
     p <- ggplot() + geom_map(
       data = map.world,
       map = map.world,
@@ -179,12 +182,17 @@ qc_plot <- function(ssm.tbl,
 
   if(filt_rnd == 1) {
     pdf(
+      if(is.null(fullpath)) {
       file = paste(
         "../raatd_data/data_filtered/data_for_QC/qc_1/",
         sp,
         "_forQC_ssm.pdf",
         sep = ""
-      ),
+      )
+      }
+      else {
+        file = paste(file.path(fullpath, sp), "_plots.pdf", sep = "")
+      },
       width = 8,
       height = 10,
       pointsize = 16
@@ -192,12 +200,17 @@ qc_plot <- function(ssm.tbl,
   }
   else if(filt_rnd == "1b"){
     pdf(
+      if(is.null(fullpath)) {
       file = paste(
         "../raatd_data/data_filtered/filtered_1/",
         sp,
         "_by_id_ssm.pdf",
         sep = ""
-      ),
+      )
+      }
+      else {
+        file = paste(file.path(fullpath, sp), "_plots.pdf", sep = "")
+      },
       width = 8,
       height = 10,
       pointsize = 16
@@ -205,25 +218,35 @@ qc_plot <- function(ssm.tbl,
   }
   else if(filt_rnd == 2) {
     pdf(
+      if(is.null(fullpath)) {
       file = paste(
         "../raatd_data/data_filtered/data_for_QC/qc_2/",
         sp,
         "_stage_forQC_ssm.pdf",
         sep = ""
-      ),
+      )
+      }
+      else {
+        file = paste(file.path(fullpath, sp), "_plots.pdf", sep = "")
+      },
       width = 8,
       height = 10,
       pointsize = 16
     )
   }
-  else if(filt_rnd == 3) {
+  else if(filt_rnd == "2b") {
     pdf(
+      if(is.null(fullpath)) {
       file = paste(
         "../raatd_data/data_filtered/filtered_by_stage/",
         sp,
         "_by_stage_ssm.pdf",
         sep = ""
-      ),
+      )
+      }
+      else {
+        file = paste(file.path(fullpath, sp), "_plots.pdf", sep = "")
+      },
       width = 8,
       height = 10,
       pointsize = 16

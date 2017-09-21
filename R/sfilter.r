@@ -4,32 +4,36 @@
 ##' time steps for GPS, GLS and/or PTT devices & calls \code{ssmTMB::fit_ssm} to do the
 ##' filtering. \code{ssmTMB} can be installed via \code{devtools::install_github("ianjonsen/ssmTMB")}.
 ##'
-##' @title sfilter
+##' @title SSM filter
 ##' @param d input data from \code{prefilter} as a tibble of individual tracks grouped by id
 ##' @param ts specify a list of time steps (in h) for gps, gls, & ptt datasets
 ##' @param ... additional arguments passed to \code{ssmTMB::fit_ssm}
-##' @return a list with 10 elements (see ??fit_ssm)
+##' @return a list with 10 elements (see ?ssmTMB::fit_ssm)
 ##'
 ##' @examples
 ##' \dontrun{
+##' ## run prefilter with local copies of data and but do not write output to files
 ##' pfd <- prefilter(
-##'   sp = "SOES",
+##'   sp = "ROPE",
 ##'   min_obs = 30,
 ##'   min_days = 5,
 ##'   vmax = 10,
-##'   path2data = "~/Dropbox/r"
+##'   fullpath = c(file.path("data","metadata.csv"), file.path("data","rope.csv"), NA, NA)
 ##'   )
 ##'
 ##' ssm_by_id <- pfd %>%
-##'   dplyr::do(ssm = sfilter(., span = 0.4, nu = 5))
+##'   do(ssm = sfilter(., span = 0.4, nu = 5))
 ##'
 ##' ## try re-filtering tracks that failed to converge
 ##' ssm_by_id <- redo_sfilter(ssm_by_id, pfd, tries = 10)
+##'
+##' ## generate QC plots
+##' ssm_by_id %>% qc_plot(sp = "rope", fullpath = file.path(getwd()))
 ##' }
 ##'
 ##' @importFrom dplyr mutate
 ##' @importFrom ssmTMB fit_ssm
-##'
+##' @export
 
 sfilter <- function(d,
                    ts = list(gps = 1, gls = 12, ptt = 2),

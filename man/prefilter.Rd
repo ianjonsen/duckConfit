@@ -5,7 +5,7 @@
 \title{Prefilter}
 \usage{
 prefilter(sp = "ADPE", min_obs = 30, min_days = 5, vmax = 10,
-  path2data = "..")
+  path2repo = "..", fullpath = NULL)
 }
 \arguments{
 \item{sp}{species abbreviated name (a 4-letter code)}
@@ -16,7 +16,11 @@ prefilter(sp = "ADPE", min_obs = 30, min_days = 5, vmax = 10,
 
 \item{vmax}{maximum travel rate (m/s) for speed filter}
 
-\item{path2data}{start of file path hierarchy (e.g., "~/Dropbox")}
+\item{path2repo}{start of file path hierarchy (e.g., "~/Dropbox")}
+
+\item{fullpath}{user-provided full path to data (default = NULL). For cases where
+user does not want to touch their local RAATD repo. In this case, path2repo
+will be ignored}
 }
 \value{
 writes a tibble to a .csv file with the following variables:
@@ -47,7 +51,7 @@ pfd <- prefilter(
   min_obs = 30,
   min_days = 5,
   vmax = 10,
-  path2data = "~/Dropbox/r"
+  path2repo = "~/Dropbox/r"
   )
 }
 

@@ -12,6 +12,9 @@
 ##' @param min_days minimum number days a deployment must last
 ##' @param vmax maximum travel rate (m/s) for speed filter
 ##' @param path2repo start of file path hierarchy (e.g., "~/Dropbox")
+##' @param fullpath user-provided full path to data (default = NULL). For cases where
+##'        user does not want to touch their local RAATD repo. In this case, path2repo
+##'        will be ignored
 ##' @return writes a tibble to a .csv file with the following variables:
 ##' \item{\code{id}}{individual animal id}
 ##' \item{\code{date}}{POSIX date-time}
@@ -40,29 +43,36 @@
 ##' @importFrom dplyr filter mutate select rename left_join group_by distinct arrange do
 ##' @importFrom tibble tibble
 ##' @export
-##'
 
 prefilter <-
   function(sp = "ADPE",
            min_obs = 30,
            min_days = 5,
            vmax = 10,
-           path2repo = "..") {
+           path2repo = "..",
+           fullpath = NULL) {
 
     ## load canonical metadata & tracking data files
-    fp_meta <-
-      file.path(path2repo,
-                "raatd_data",
-                "metadata",
-                "SCAR_Metadata_2017_forWEBDAV.csv")
+    if(is.null(fullpath)) {
+      fp_meta <-
+        file.path(
+          path2repo,
+          "raatd_data",
+          "metadata",
+          "SCAR_Metadata_2017_forWEBDAV.csv")
 
-    fp_raatd <-
-      file.path(path2repo,
-        "raatd_data",
-        "data_raw_trimmed",
-        paste("RAATD2017_", sp, ".csv", sep = "")
-      )
-
+      fp_raatd <-
+        file.path(
+          path2repo,
+          "raatd_data",
+          "data_raw_trimmed",
+          paste("RAATD2017_", sp, ".csv", sep = "")
+        )
+    }
+    else {
+      fp_meta <- fullpath[1]
+      fp_raatd <- fullpath[2]
+    }
     ## merge metadata & subset to species == sp
     m_sub <- read_csv(fp_meta) %>%
       filter(., abbreviated_name == sp)
@@ -234,22 +244,31 @@ prefilter <-
       individuals_removed = c(NA, NA, d3.rep, d4.rep, NA),
       obs_flagged_to_ignore = c(NA, NA, NA, NA, d5.rep)
     )
-    fp.rep <- file.path(path2repo,
-                        "raatd_data",
-                        "data_filtered",
-                        "data_prefiltered",
-                        paste(sp, "_prefilter_report.csv", sep = "")
-                        )
-    write_csv(rep, fp.rep)
+    if (is.null(fullpath)) {
+      fp_rep <- file.path(
+        path2repo,
+        "raatd_data",
+        "data_filtered",
+        "data_prefiltered",
+        paste(sp, "_prefilter_report.csv", sep = "")
+      )
 
-    fp.pfout <- file.path(path2repo,
-                          "raatd_data",
-                          "data_filtered",
-                          "data_prefiltered",
-                          paste(sp, "_prefiltered_data.csv", sep = "")
-                          )
-
-    write_csv(d5, fp.pfout)
+      fp_pfout <- file.path(
+        path2repo,
+        "raatd_data",
+        "data_filtered",
+        "data_prefiltered",
+        paste(sp, "_prefiltered_data.csv", sep = "")
+      )
+    }
+    else {
+      fp_rep <- file.path(fullpath[3], paste(sp, "_prefilter_report.csv", sep = ""))
+      fp_pfout <- file.path(fullpath[4], paste(sp, "_prefiltered_data.csv", sep = ""))
+    }
+    if(!is.na(fullpath[3:4]) || is.null(fullpath)) {
+      write_csv(rep, fp_rep)
+      write_csv(d5, fp_pfout)
+    }
     d5
   }
 

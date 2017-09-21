@@ -4,7 +4,7 @@
 \alias{qc_plot}
 \title{qc_plot}
 \usage{
-qc_plot(ssm.tbl, sp, filt_rnd = 1)
+qc_plot(ssm.tbl, sp, filt_rnd = 1, fullpath = NULL)
 }
 \arguments{
 \item{ssm.tbl}{a compound tibble of SSM filter output grouped by \code{id} or
@@ -12,7 +12,9 @@ qc_plot(ssm.tbl, sp, filt_rnd = 1)
 
 \item{sp}{the species' 4-letter abbreviated name}
 
-\item{filt_rnd}{the filtering round for which plots are generated (one of: 1, 1b, 2, 3)}
+\item{filt_rnd}{the filtering round for which plots are generated (one of: 1, 1b, 2, 2b)}
+
+\item{fullpath}{user-provided full path for .pdf file (default = NULL)}
 }
 \value{
 a .pdf file of quality control plots

@@ -12,6 +12,7 @@
 ##' @title redo_sfilter
 ##'
 ##' @importFrom dplyr slice right_join select mutate ungroup group_by group_vars do
+##' @export
 
 redo_sfilter <-
   function(ssm_obj,
