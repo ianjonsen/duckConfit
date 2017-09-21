@@ -11,7 +11,7 @@
 ##' @param min_obs minimum number of observation records a deployment must have
 ##' @param min_days minimum number days a deployment must last
 ##' @param vmax maximum travel rate (m/s) for speed filter
-##' @param path2data start of file path hierarchy (e.g., "~/Dropbox")
+##' @param path2repo start of file path hierarchy (e.g., "~/Dropbox")
 ##' @return writes a tibble to a .csv file with the following variables:
 ##' \item{\code{id}}{individual animal id}
 ##' \item{\code{date}}{POSIX date-time}
@@ -30,7 +30,7 @@
 ##'   min_obs = 30,
 ##'   min_days = 5,
 ##'   vmax = 10,
-##'   path2data = "~/Dropbox/r"
+##'   path2repo = "~/Dropbox/r"
 ##'   )
 ##' }
 ##'
@@ -47,17 +47,17 @@ prefilter <-
            min_obs = 30,
            min_days = 5,
            vmax = 10,
-           path2data = "..") {
+           path2repo = "..") {
 
     ## load canonical metadata & tracking data files
     fp_meta <-
-      file.path(path2data,
+      file.path(path2repo,
                 "raatd_data",
                 "metadata",
                 "SCAR_Metadata_2017_forWEBDAV.csv")
 
     fp_raatd <-
-      file.path(path2data,
+      file.path(path2repo,
         "raatd_data",
         "data_raw_trimmed",
         paste("RAATD2017_", sp, ".csv", sep = "")
@@ -234,7 +234,7 @@ prefilter <-
       individuals_removed = c(NA, NA, d3.rep, d4.rep, NA),
       obs_flagged_to_ignore = c(NA, NA, NA, NA, d5.rep)
     )
-    fp.rep <- file.path(path2data,
+    fp.rep <- file.path(path2repo,
                         "raatd_data",
                         "data_filtered",
                         "data_prefiltered",
@@ -242,7 +242,7 @@ prefilter <-
                         )
     write_csv(rep, fp.rep)
 
-    fp.pfout <- file.path(path2data,
+    fp.pfout <- file.path(path2repo,
                           "raatd_data",
                           "data_filtered",
                           "data_prefiltered",
