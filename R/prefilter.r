@@ -2,11 +2,10 @@
 ##'
 ##' Prepare standardised track data for state-space filtering by performing
 ##' further standardisation and culling unacceptably short deployments
-##' 
+##'
 ##' The track data are fetched automatically from the RAATD repository by specifying
-##' species' abbreviated name.
-##' 
-##' 
+##' a species' abbreviated name.
+##'
 ##' @title Prefilter
 ##' @param sp species abbreviated name (a 4-letter code)
 ##' @param min_obs minimum number of observation records a deployment must have
@@ -21,56 +20,62 @@
 ##' \item{\code{lat}}{latitude}
 ##' \item{\code{device_type}}{tag type: GPS, PTT, or GLS}
 ##' \item{\code{keep}}{should record be used of ignored by SSM filter (logical)}
-##' 
-##' @examples 
-##' 
-##' 
+##'
+##' @examples
+##' \dontrun{
+##' ## prefilter RAATD southern elephant seal tracks
+##'
+##' pfd <- prefilter(
+##'   sp = "SOES",
+##'   min_obs = 30,
+##'   min_days = 5,
+##'   vmax = 10,
+##'   path2data = "~/Dropbox/r"
+##'   )
+##' }
+##'
 ##' @importFrom diveMove grpSpeedFilter
 ##' @importFrom lubridate ymd_hms
 ##' @importFrom readr read_csv cols col_character col_integer col_time col_double
 ##' @importFrom dplyr filter mutate select rename left_join group_by distinct arrange do
 ##' @importFrom tibble tibble
 ##' @export
-##' 
+##'
 
 prefilter <-
   function(sp = "ADPE",
            min_obs = 30,
            min_days = 5,
            vmax = 10,
-           path2dropbox = "~/Dropbox") {
-    require(diveMove, quietly = TRUE, warn.conflicts = FALSE)
-    require(dplyr, quietly = TRUE, warn.conflicts = FALSE)
-    require(readr, quietly = TRUE, warn.conflicts = FALSE)
-    require(lubridate, quietly = TRUE, warn.conflicts = FALSE)
-    
+           path2data = "..") {
+
     ## load canonical metadata & tracking data files
     fp_meta <-
-      file.path("..",
+      file.path(path2data,
                 "raatd_data",
                 "metadata",
                 "SCAR_Metadata_2017_forWEBDAV.csv")
-    
+
     fp_raatd <-
-      file.path("..",
+      file.path(path2data,
         "raatd_data",
         "data_raw_trimmed",
         paste("RAATD2017_", sp, ".csv", sep = "")
       )
-    
+
     ## merge metadata & subset to species == sp
     m_sub <- read_csv(fp_meta) %>%
       filter(., abbreviated_name == sp)
- 
+
     dev_dat <- m_sub %>%
       select(individual_id, device_type) %>%
       rename(id = individual_id)
-    
+
     ## find individual tracks to discard
     discard_ids <- m_sub %>%
       filter(keepornot == "Discard") %>%
       select(individual_id)
-  
+
     ## read in tracking dataset & merge with dev.dat to add correct Unit (tag/data) type
     dat <-
       read_csv(
@@ -89,7 +94,7 @@ prefilter <-
         ),
         na = c("", "NA", "NaN")
       )
-        
+
     ## remove 'hanging' locations at track starts & ends using
     ##    'location_to_keep' flag in canonical data this preserves
     ##     the "trimmed data" and discards the "trimmings"
@@ -105,11 +110,11 @@ prefilter <-
       rename(lat = decimal_latitude) %>%
       left_join(., dev_dat, by = "id") %>%
       select(id, date, lc, lon, lat, device_type)
-    
+
     ## remove individual tracks labelled as "Discard"
     d <- d %>%
       filter(!id %in% discard_ids$individual_id)
-    
+
     ## assign lc B to all GLS data and to all PTT data where lc = NA
     ## assign lc 3 to all GPS data
     ## deal with common alternate PTT lc designations
@@ -128,16 +133,16 @@ prefilter <-
       mutate(lc = ifelse(lc == "-1" &
                            device_type == "PTT", "A", lc)) %>%
       mutate(lc = ifelse(lc == "Z", "B", lc))
-    
+
     ## mutate lc to ordered factor
     d <- d %>%
       mutate(lc = factor(lc,
                          levels = c(3, 2, 1, 0, "A", "B"),
                          ordered = TRUE))
-    
+
     d <- d %>%
       group_by(id)
-    
+
     ## remove any duplicated time records, any nearly duplicate time records occur within 120 s
     ##  & order records by time within each individual track
     ##  keep track of # records removed
@@ -151,16 +156,16 @@ prefilter <-
       do(arrange(., order(date))) %>%
       filter(.,!dup) %>%
       select(-dup)
-  
+
     d1.rep <- nrow(d) - nrow(d1)
     cat(sprintf("%d duplicate time &/or near duplicate location/time records removed\n", d1.rep))
-    
+
     ## remove locations in N hemisphere, eg. when tags turned on by manufacturer
     d2 <- d1 %>%
       do(filter(., lat < 10))
     d2.rep <- nrow(d1) - nrow(d2)
     cat(sprintf("%d records at > 10 Latitude N removed\n", d2.rep))
-    
+
     ## remove deployments with less than min_obs
     d3 <- d2 %>%
       do(filter(., n() >= min_obs))
@@ -173,7 +178,7 @@ prefilter <-
       ),
       d3.rep
     ))
-    
+
     ## remove GPS deployments that last less than 1 day, other deployments les than min_days days
     f <- d3 %>%
       do(filter(
@@ -197,7 +202,7 @@ prefilter <-
       ),
       d4.rep
     ))
-    
+
     ## flag extreme travel rate locations to be ignored at ssm filter stage
     d5 <- d4 %>%
       do(mutate(., keep = grpSpeedFilter(cbind(date, lon, lat), speed.thr = vmax)))
@@ -210,11 +215,11 @@ prefilter <-
       ),
       d5.rep
     ))
-    
+
     ## return pre-filtered data
     ind <- c(NA, NA, d3.rep, d4.rep, NA)
     ign <- c(NA, NA, NA, NA, d5.rep)
-    
+
     rep <- tibble(
       test = c(
         "duplicated_dates",
@@ -229,21 +234,21 @@ prefilter <-
       individuals_removed = c(NA, NA, d3.rep, d4.rep, NA),
       obs_flagged_to_ignore = c(NA, NA, NA, NA, d5.rep)
     )
-    fp.rep <- file.path("..",
+    fp.rep <- file.path(path2data,
                         "raatd_data",
                         "data_filtered",
                         "data_prefiltered",
                         paste(sp, "_prefilter_report.csv", sep = "")
                         )
     write_csv(rep, fp.rep)
-    
-    fp.pfout <- file.path("..",
+
+    fp.pfout <- file.path(path2data,
                           "raatd_data",
                           "data_filtered",
                           "data_prefiltered",
                           paste(sp, "_prefiltered_data.csv", sep = "")
                           )
-   
+
     write_csv(d5, fp.pfout)
     d5
   }

@@ -5,7 +5,7 @@
 \title{Prefilter}
 \usage{
 prefilter(sp = "ADPE", min_obs = 30, min_days = 5, vmax = 10,
-  path2dropbox = "~/Dropbox")
+  path2data = "..")
 }
 \arguments{
 \item{sp}{species abbreviated name (a 4-letter code)}
@@ -36,9 +36,19 @@ Prepare standardised track data for state-space filtering by performing
 further standardisation and culling unacceptably short deployments
 
 The track data are fetched automatically from the RAATD repository by specifying
-species' abbreviated name.
+a species' abbreviated name.
 }
 \examples{
+\dontrun{
+## prefilter RAATD southern elephant seal tracks
 
+pfd <- prefilter(
+  sp = "SOES",
+  min_obs = 30,
+  min_days = 5,
+  vmax = 10,
+  path2data = "~/Dropbox/r"
+  )
+}
 
 }

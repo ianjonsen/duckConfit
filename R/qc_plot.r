@@ -1,23 +1,38 @@
+##' Generate quality control plots
+##'
+##' Prepare standardised track data for state-space filtering by performing
+##' further standardisation and culling unacceptably short deployments
+##'
+##' The track data are fetched automatically from the RAATD repository by specifying
+##' a species' abbreviated name.
+##'
+##' @title qc_plot
+##' @param ssm.tbl a compound tibble of SSM filter output grouped by \code{id} or
+##'   \code{id} and \code{stage}
+##' @param sp the species' 4-letter abbreviated name
+##' @param filt_rnd the filtering round for which plots are generated (one of: 1, 1b, 2, 3)
+##' @return a .pdf file of quality control plots
+##'
+##' @examples
+##' \dontrun{
+##' ssm_by_id %>% qc_plot(sp = "soes")
+##' }
+##' @importFrom ggplot2 aes map_data ggplot geom_map theme ylim xlim geom_path geom_point ggtitle geom_line geom_rug
+##' @importFrom dplyr mutate do
+##' @importFrom gridExtra grid.arrange
+
 qc_plot <- function(ssm.tbl,
                     sp,
                     filt_rnd = 1) {
   ## generate a .pdf of SSM fits to data for qc
-  
-  require(ggplot2, quietly = TRUE)
-  require(gridExtra, quietly = TRUE)
+
   require(mapdata, quietly = TRUE)
-  
-  wrapLon <- function(lon, lmin = -180)
-    (lon - lmin) %% 360 + lmin
-  
-  unwrapLon <- function(lon, lmin = -180)
-    cumsum(c(wrapLon(lon[1], lmin), wrapLon(diff(lon))))
-  
+
   map.world <- map_data(map = "world")
 
-  
+
   plt.fn <- function(d) {
-    
+
     ssm <- d$ssm[[1]]
     p <- ggplot() + geom_map(
       data = map.world,
@@ -25,16 +40,16 @@ qc_plot <- function(ssm.tbl,
       aes(map_id = "Antarctica"),
       fill = "snow"
     )
- 
+
     if (length(ssm) > 1) {
       loc.dat <- subset(ssm$data, keep)
       loc.pred <- ssm$predicted
       wl <- FALSE
-      
+
       x.rng <- extendrange(loc.pred$lon, f = 0.1)
       if (diff(x.rng) > 300)
         wl <- TRUE
-      
+
       if (wl) {
         tlon.d <- loc.dat %>% mutate(lon = wrapLon(lon, lmin = 0))
         tlon.p <- loc.pred %>% mutate(lon = wrapLon(lon, lmin = 0))
@@ -50,9 +65,9 @@ qc_plot <- function(ssm.tbl,
         }
         x.rng <- extendrange(loc.pred$lon, f = 0.1)
       }
-      
+
       y.rng <- extendrange(loc.pred$lat, f = 0.05)
-      
+
       p1 <- p +
         theme(legend.position = "none") + ylim(y.rng) + xlim(x.rng) +
         geom_point(
@@ -61,7 +76,7 @@ qc_plot <- function(ssm.tbl,
           col = "firebrick",
           size = 1
         )
-      
+
       p1 <-
         p1 + geom_path(data = loc.pred,
                        aes(x = lon, y = lat),
@@ -94,12 +109,12 @@ qc_plot <- function(ssm.tbl,
             sep = ""
           )
         )
-      
+
       p2 <-
         ggplot(data = loc.dat, aes(y = lon, x = date)) +
         ylim(x.rng) +
         geom_point(col = "firebrick", size = 1)
-      
+
       p2 <- p2 + geom_rug(col = "firebrick", sides = "b") +
         geom_line(
           data = loc.pred,
@@ -122,11 +137,11 @@ qc_plot <- function(ssm.tbl,
         geom_rug(data = loc.pred,
                  col = "dodgerblue",
                  sides = "t")
-      
+
       p3 <-
         ggplot(loc.dat, aes(y = lat, x = date)) + ylim(y.rng) +
         geom_point(col = "firebrick", size = 1)
-      
+
       p3 <- p3 + geom_rug(col = "firebrick", sides = "b") +
         geom_line(
           data = loc.pred,
@@ -149,11 +164,11 @@ qc_plot <- function(ssm.tbl,
         geom_rug(data = loc.pred,
                  col = "dodgerblue",
                  sides = "t")
-      
+
       grid.arrange(p1, p2, p3, heights = c(2, 1, 1))
     }
     else if (length(ssm) == 1) {
-      
+
       plot(
         0,
         0,
@@ -165,10 +180,10 @@ qc_plot <- function(ssm.tbl,
       )
     }
   }
-  
+
   cat("\n generating pdf plots...\n")
-  
-  if(filt_rnd == 1) {  
+
+  if(filt_rnd == 1) {
     pdf(
       file = paste(
         "../raatd_data/data_filtered/data_for_QC/qc_1/",
@@ -223,5 +238,5 @@ qc_plot <- function(ssm.tbl,
 
   ssm.tbl %>% do(p = plt.fn(.))
   dev.off()
-  
+
 }
