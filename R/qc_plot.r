@@ -1,10 +1,6 @@
 ##' Generate quality control plots
 ##'
-##' Prepare standardised track data for state-space filtering by performing
-##' further standardisation and culling unacceptably short deployments
-##'
-##' The track data are fetched automatically from the RAATD repository by specifying
-##' a species' abbreviated name.
+##' generate a .pdf of SSM fits to data for qc
 ##'
 ##' @title qc_plot
 ##' @param ssm.tbl a compound tibble of SSM filter output grouped by \code{id} or
@@ -24,9 +20,7 @@
 qc_plot <- function(ssm.tbl,
                     sp,
                     filt_rnd = 1) {
-  ## generate a .pdf of SSM fits to data for qc
-
-  require(mapdata, quietly = TRUE)
+  ##
 
   map.world <- map_data(map = "world")
 

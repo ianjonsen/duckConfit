@@ -21,11 +21,7 @@ a .pdf file of quality control plots
 Generate quality control plots
 }
 \details{
-Prepare standardised track data for state-space filtering by performing
-further standardisation and culling unacceptably short deployments
-
-The track data are fetched automatically from the RAATD repository by specifying
-a species' abbreviated name.
+generate a .pdf of SSM fits to data for qc
 }
 \examples{
 \dontrun{
