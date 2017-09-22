@@ -1,34 +1,42 @@
-##' State-space filter
+##' \code{sfilter()} fits a simple state-space model to fit to pre-filtered RAATD data and returns output
+##'  as a tibble grouped by individual id or individual id and breeding stage.
 ##'
-##' Wrapper function that takes data prepared by \code{prefilter}, assigns appropriate
-##' time steps for GPS, GLS and/or PTT devices & calls \code{ssmTMB::fit_ssm} to do the
+##' Wrapper function that takes data prepared by \code{prefilter()}, assigns appropriate
+##' time steps for GPS, GLS and/or PTT devices & calls \code{ssmTMB::fit_ssm()} to do the
 ##' filtering. \code{ssmTMB} can be installed via \code{devtools::install_github("ianjonsen/ssmTMB")}.
+##' Note, as \code{sfilter()} imports functions from the \code{ssmTMB} package, you must ensure you
+##' have installed the \code{TMB} package and it's dependencies
 ##'
-##' @title SSM filter
-##' @param d input data from \code{prefilter} as a tibble of individual tracks grouped by id
+##' @title State-space filter RAATD tracking data
+##' @param d input data from \code{prefilter()} as a tibble of individual tracks grouped by id
 ##' @param ts specify a list of time steps (in h) for gps, gls, & ptt datasets
-##' @param ... additional arguments passed to \code{ssmTMB::fit_ssm}
-##' @return a list with 10 elements (see ?ssmTMB::fit_ssm)
+##' @param ... additional arguments passed to \code{ssmTMB::fit_ssm()}. Two common arguments are
+##' \code{span}, the degree of loess smoothing used to estimate initial values for the location states, and
+##' \code{nu}, the degree of freedom to be used in the t-distributed error models for lon & lat
+##' @return a list with 10 elements (see \code{?ssmTMB::fit_ssm()})
 ##'
 ##' @examples
 ##' \dontrun{
-##' ## run prefilter with local copies of data and but do not write output to files
+##' ## run prefilter with example royal penguin data & metadata
+##' data(rope)
+##'
 ##' pfd <- prefilter(
+##'   dat = rope,
+##'   metadata = meta,
 ##'   sp = "ROPE",
 ##'   min_obs = 30,
 ##'   min_days = 5,
-##'   vmax = 10,
-##'   fullpath = c(file.path("data","metadata.csv"), file.path("data","rope.csv"), NA, NA)
+##'   vmax = 10
 ##'   )
 ##'
 ##' ssm_by_id <- pfd %>%
 ##'   do(ssm = sfilter(., span = 0.4, nu = 5))
 ##'
-##' ## try re-filtering tracks that failed to converge
+##' ## re-filter tracks that failed to converge
 ##' ssm_by_id <- redo_sfilter(ssm_by_id, pfd, tries = 10)
 ##'
 ##' ## generate QC plots
-##' ssm_by_id %>% qc_plot(sp = "rope", fullpath = file.path(getwd()))
+##' ssm_by_id %>% qc_plot(sp = "rope")
 ##' }
 ##'
 ##' @importFrom dplyr mutate
@@ -62,8 +70,9 @@ sfilter <- function(d,
       d[d$keep, ] <- tmp
     }
   }
-
+options(warn = -1) ## prevents warnings from TMB re: NaNs in sqrt(diag(cov))
   out <- try(fit_ssm(d, subset = d$keep, tstep = ts / 24, ...), silent = TRUE)
+options(warn = 0)
 
   ## if track on 0,360+ then shift back to -180,+180
   if(length(out) > 1) {

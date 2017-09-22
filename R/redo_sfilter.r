@@ -1,6 +1,6 @@
-##' redo_sfilter
-##'
-##' Internal function not normally called by user
+##' \code{redo_sfilter()} iteratively re-fits the state-space model to tracks
+##' that have failed to converge. It iteratively adjusts the values for
+##' \code{span} and \code{nu} and makes \code{tries = n} attempts before giving up.
 ##'
 ##' redo ssm filter for tracks that failed to converge,
 ##'  trying incrementally different \code{span} & \code{nu} values.
@@ -10,7 +10,12 @@
 ##'  short & typically sparsely observed tracks
 ##'
 ##' @title redo_sfilter
-##'
+##' @param ssm_obj output from \code{sfilter()} - a \code{tibble} grouped by id or is and stage
+##' @param data data object provided by \code{prefilter()}
+##' @param s.inc increment for \code{span} argument
+##' @param n.inc increment for \code{nu} argument
+##' @param tries number of attempts to successfully filter all convergence failures before giving up
+##' @param common.tau (logical) fit SSM with a single SD for measurement error in both lon & lat
 ##' @importFrom dplyr slice right_join select mutate ungroup group_by group_vars do
 ##' @export
 

@@ -4,17 +4,14 @@
 \alias{qc_plot}
 \title{qc_plot}
 \usage{
-qc_plot(ssm.tbl, sp, filt_rnd = 1, fullpath = NULL)
+qc_plot(ssm.tbl, sp, fpath = NULL)
 }
 \arguments{
-\item{ssm.tbl}{a compound tibble of SSM filter output grouped by \code{id} or
-\code{id} and \code{stage}}
+\item{ssm.tbl}{a compound tibble of SSM filter output grouped by \code{id}}
 
 \item{sp}{the species' 4-letter abbreviated name}
 
-\item{filt_rnd}{the filtering round for which plots are generated (one of: 1, 1b, 2, 2b)}
-
-\item{fullpath}{user-provided full path for .pdf file (default = NULL)}
+\item{fpath}{user-provided file path for saving .pdf file (default = getwd())}
 }
 \value{
 a .pdf file of quality control plots
@@ -23,10 +20,10 @@ a .pdf file of quality control plots
 Generate quality control plots
 }
 \details{
-generate a .pdf of SSM fits to data for qc
+generate a .pdf of SSM fits to RAATD data to aid quality control
 }
 \examples{
 \dontrun{
-ssm_by_id \%>\% qc_plot(sp = "soes")
+ssm_by_id \%>\% qc_plot(sp = "rope")
 }
 }

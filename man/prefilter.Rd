@@ -4,11 +4,13 @@
 \alias{prefilter}
 \title{Prefilter}
 \usage{
-prefilter(sp = "ADPE", min_obs = 30, min_days = 5, vmax = 10,
-  path2repo = "..", fullpath = NULL)
+prefilter(dat, metadata, min_obs, min_days, vmax, sp = NULL,
+  path2repo = NULL)
 }
 \arguments{
-\item{sp}{species abbreviated name (a 4-letter code)}
+\item{dat}{provide example royal penguin tracking data}
+
+\item{metadata}{provide example royal penguin metadata}
 
 \item{min_obs}{minimum number of observation records a deployment must have}
 
@@ -16,11 +18,9 @@ prefilter(sp = "ADPE", min_obs = 30, min_days = 5, vmax = 10,
 
 \item{vmax}{maximum travel rate (m/s) for speed filter}
 
-\item{path2repo}{start of file path hierarchy (e.g., "~/Dropbox")}
+\item{sp}{for future functionality, not currently used}
 
-\item{fullpath}{user-provided full path to data (default = NULL). For cases where
-user does not want to touch their local RAATD repo. In this case, path2repo
-will be ignored}
+\item{path2repo}{for future functionality, not currently used}
 }
 \value{
 writes a tibble to a .csv file with the following variables:
@@ -44,14 +44,16 @@ a species' abbreviated name.
 }
 \examples{
 \dontrun{
-## prefilter RAATD southern elephant seal tracks
+## prefilter RAATD royal penguin tracks
+## load example data
+data(rope)
 
 pfd <- prefilter(
-  sp = "SOES",
+  dat = rope,
+  metadata = meta,
   min_obs = 30,
   min_days = 5,
-  vmax = 10,
-  path2repo = "~/Dropbox/r"
+  vmax = 10
   )
 }
 
