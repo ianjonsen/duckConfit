@@ -1,0 +1,14 @@
+---
+title: "Confit de Canard"
+author: "Ian Jonsen"
+date: "22/09/2017"
+output: 
+  html_document:
+    toc: false
+    theme: cerulean
+    highlight: default
+---
+
+This short vignette documents the data preparation and SSM-filtering steps used for the RAATD data. The workflow is illustrated using the southern elephant seal (*Mirounga leonina*) data as an example. 
+
+## Data preparation

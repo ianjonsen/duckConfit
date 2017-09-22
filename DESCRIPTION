@@ -17,3 +17,6 @@ Imports: mapdata,
     readr,
     tibble,
     gridExtra
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr
