@@ -14,7 +14,6 @@ This short vignette documents the data preparation and SSM-filtering steps used 
 ## Data preparation
 Load example royal penguin data and apply `prefilter()` to prepare data for state-space filtering. The function prints information about the number of tracks discarded and location flagged to be ignored by the state-space filter
 ```{r, eval = FALSE}
-setwd("..")
 require(dplyr)
 require(duckConfit)
 data(rope)
@@ -35,7 +34,7 @@ Fit state-space model to pre-filtered data `pfd` and use `dplyr::do()` to apply 
 ```{r, eval = FALSE}
 
 ssm_by_id <- pfd %>%
-  do(sfilter(., span = 0.4, nu = 5))
+  do(ssm = sfilter(., span = 0.4, nu = 5))
 
 ssm_by_id <- redo_sfilter(ssm_by_id, pfd, tries = 10)
 
